@@ -987,7 +987,7 @@ contract Ownable is IOwnable {
     }
 }
 
-contract sRenaissance is ERC20Permit, Ownable {
+contract sArt is ERC20Permit, Ownable {
 
     using SafeMath for uint256;
 

@@ -869,7 +869,7 @@ contract VaultOwned is Ownable {
 
 }
 
-contract RenaissanceERC20Token is ERC20Permit, VaultOwned {
+contract ArtERC20Token is ERC20Permit, VaultOwned {
 
     using SafeMath for uint256;
 
