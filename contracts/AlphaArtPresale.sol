@@ -18,30 +18,18 @@ contract AlphaArtPresale is Ownable {
         uint256 debt; // total ART claimed thus aART debt
         bool claimed; // True if a user has claimed ART
     }
-
-    struct TeamInfo {
-        uint256 numWhitelist; // number of whitelists
-        uint256 amount; // Amout DAI deposited by team
-        uint256 debt; // total ART claimed thus aART debt
-        bool claimed; // True if a team member has claimed ART
-    }
-
-    // Tokens to raise (DAI) & (FRAX) and for offer (aART) which can be swapped for (ART)
+    // Tokens to raise (DAI) and for offer (aART) which can be swapped for (ART)
     IERC20 public DAI; // for user deposits
-    IERC20 public FRAX; // for team deposits
     IERC20 public aART;
     IERC20 public ART;
 
     address public DAO; // Multisig treasury to send proceeds to
-
-    address public WARCHEST; // Multisig to send team proceeds to
 
     uint256 public price = 20 * 1e18; // 20 DAI per ART
 
     uint256 public cap = 500 * 1e18; // 1500 DAI cap per whitelisted user
 
     uint256 public totalRaisedDAI; // total DAI raised by sale
-    uint256 public totalRaisedFRAX; // total FRAX raised by sale
 
     uint256 public totalDebt; // total aART and thus ART owed to users
 
@@ -57,11 +45,7 @@ contract AlphaArtPresale is Ownable {
 
     mapping(address => UserInfo) public userInfo;
 
-    mapping(address => TeamInfo) public teamInfo;
-
     mapping(address => bool) public whitelisted; // True if user is whitelisted
-
-    mapping(address => bool) public whitelistedTeam; // True if team member is whitelisted
 
     mapping(address => uint256) public artClaimable; // amount of art claimable by address
 
@@ -78,9 +62,7 @@ contract AlphaArtPresale is Ownable {
         address _aART,
         address _ART,
         address _DAI,
-        address _FRAX,
         address _DAO,
-        address _WARCHEST
     ) {
         require( _aART != address(0) );
         aART = IERC20(_aART);
@@ -88,12 +70,8 @@ contract AlphaArtPresale is Ownable {
         ART = IERC20(_ART);
         require( _DAI != address(0) );
         DAI = IERC20(_DAI);
-        require( _FRAX != address(0) );
-        FRAX = IERC20(_FRAX);
         require( _DAO != address(0) );
         DAO = _DAO;
-        require( _WARCHEST != address(0) );
-        WARCHEST = _WARCHEST;
     }
 
     //* @notice modifer to check if contract is paused
@@ -129,27 +107,6 @@ contract AlphaArtPresale is Ownable {
     function removeWhitelist(address _address) external onlyOwner {
         require(!started, "Sale has already started");
         whitelisted[_address] = false;
-    }
-    /**
-     *  @notice adds a team member from sale
-     *  @param _address: address to whitelist
-     *  @param _numWhitelist: number of whitelists for address
-     */
-    function addTeam(address _address, uint256 _numWhitelist) external onlyOwner {
-        require(!started, "Sale has already started");
-        require(_numWhitelist != 0, "cannot set zero whitelists");
-        whitelistedTeam[_address] = true;
-        teamInfo[_address].numWhitelist = _numWhitelist;
-    }
-
-    /**
-     *  @notice removes a team member from sale
-     *  @param _address: address to remove from whitelist
-     */
-    function removeTeam(address _address) external onlyOwner {
-        require(!started, "Sale has already started");
-        whitelistedTeam[_address] = false;
-        delete teamInfo[_address];
     }
 
     // @notice Starts the sale
@@ -227,36 +184,6 @@ contract AlphaArtPresale is Ownable {
         DAI.safeTransferFrom( msg.sender, DAO, _amount );
 
         IAlphaArt( address(aART) ).mint( msg.sender, payout );
-
-        emit Deposit(msg.sender, _amount);
-    }
-    /**
-     *  @notice it deposits FRAX for the sale
-     *  @param _amount: amount of FRAX to deposit to sale (18 decimals)
-     *  @dev only for team members
-     */
-    function depositTeam(uint256 _amount) external checkIfPaused {
-        require(started, 'Sale has not started');
-        require(!ended, 'Sale has ended');
-        require(whitelistedTeam[msg.sender] == true, 'msg.sender is not whitelisted team');
-
-        TeamInfo storage team = teamInfo[msg.sender];
-
-        require(
-            cap.mul(team.numWhitelist) >= team.amount.add(_amount),
-            'new amount above team limit'
-            );
-
-        team.amount = team.amount.add(_amount);
-        totalRaisedFRAX = totalRaisedFRAX.add(_amount);
-
-        uint256 payout = _amount.mul(1e18).div(price).div(1e9); // ART debt to claim
-
-        totalDebt = totalDebt.add(payout);
-
-        FRAX.safeTransferFrom( msg.sender, DAO, _amount );
-
-        IAlphaArt( address(aART) ).mint( WARCHEST, payout );
 
         emit Deposit(msg.sender, _amount);
     }
