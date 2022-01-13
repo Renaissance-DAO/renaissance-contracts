@@ -5,31 +5,31 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface IAlphaArt {
+interface IBetaArt {
     function mint(address account_, uint256 amount_) external;
 }
 
-contract DaiArtPresale is Ownable {
+contract BetaArtPresale is Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
     struct UserInfo {
         uint256 amount; // Amount DAI deposited by user
-        uint256 debt; // total ART claimed thus aART debt
+        uint256 debt; // total ART claimed thus bART debt
         bool claimed; // True if a user has claimed ART
     }
 
     struct TeamInfo {
         uint256 numWhitelist; // number of whitelists
         uint256 amount; // Amout DAI deposited by team
-        uint256 debt; // total ART claimed thus aART debt
+        uint256 debt; // total ART claimed thus bART debt
         bool claimed; // True if a team member has claimed ART
     }
 
-    // Tokens to raise (DAI) & (FRAX) and for offer (aART) which can be swapped for (ART)
+    // Tokens to raise (DAI) & (FRAX) and for offer (bART) which can be swapped for (ART)
     IERC20 public DAI; // for user deposits
     IERC20 public FRAX; // for team deposits
-    IERC20 public aART;
+    IERC20 public bART;
     IERC20 public ART;
 
     address public DAO; // Multisig treasury to send proceeds to
@@ -38,12 +38,12 @@ contract DaiArtPresale is Ownable {
 
     uint256 public price = 20 * 1e18; // 20 DAI per ART
 
-    uint256 public cap = 1500 * 1e18; // 1500 DAI cap per whitelisted user
+    uint256 public cap = 500 * 1e18; // 1500 DAI cap per whitelisted user
 
     uint256 public totalRaisedDAI; // total DAI raised by sale
     uint256 public totalRaisedFRAX; // total FRAX raised by sale
 
-    uint256 public totalDebt; // total aART and thus ART owed to users
+    uint256 public totalDebt; // total bART and thus ART owed to users
 
     bool public started; // true when sale is started
 
@@ -51,7 +51,7 @@ contract DaiArtPresale is Ownable {
 
     bool public claimable; // true when sale is claimable
 
-    bool public claimAlpha; // true when aART is claimable
+    bool public claimBeta; // true when bART is claimable
 
     bool public contractPaused; // circuit breaker
 
@@ -71,19 +71,19 @@ contract DaiArtPresale is Ownable {
     event SaleStarted(uint256 block);
     event SaleEnded(uint256 block);
     event ClaimUnlocked(uint256 block);
-    event ClaimAlphaUnlocked(uint256 block);
+    event ClaimBetaUnlocked(uint256 block);
     event AdminWithdrawal(address token, uint256 amount);
 
     constructor(
-        address _aART,
+        address _bART,
         address _ART,
         address _DAI,
         address _FRAX,
         address _DAO,
         address _WARCHEST
     ) {
-        require( _aART != address(0) );
-        aART = IERC20(_aART);
+        require( _bART != address(0) );
+        bART = IERC20(_bART);
         require( _ART != address(0) );
         ART = IERC20(_ART);
         require( _DAI != address(0) );
@@ -178,12 +178,12 @@ contract DaiArtPresale is Ownable {
     }
 
 
-    // @notice lets users claim aART
-    function claimAlphaUnlock() external onlyOwner {
+    // @notice lets users claim bART
+    function claimBetaUnlock() external onlyOwner {
         require(claimable, "Claim has not been unlocked");
-        require(!claimAlpha, "Claim Alpha has already been unlocked");
-        claimAlpha = true;
-        emit ClaimAlphaUnlocked(block.number);
+        require(!claimBeta, "Claim Beta has already been unlocked");
+        claimBeta = true;
+        emit ClaimBetaUnlocked(block.number);
     }
 
     // @notice lets owner pause contract
@@ -220,13 +220,13 @@ contract DaiArtPresale is Ownable {
         user.amount = user.amount.add(_amount);
         totalRaisedDAI = totalRaisedDAI.add(_amount);
 
-        uint256 payout = _amount.mul(1e18).div(price).div(1e9); // aART to mint for _amount
+        uint256 payout = _amount.mul(1e18).div(price).div(1e9); // bART to mint for _amount
 
         totalDebt = totalDebt.add(payout);
 
         DAI.safeTransferFrom( msg.sender, DAO, _amount );
 
-        IAlphaArt( address(aART) ).mint( msg.sender, payout );
+        IBetaArt( address(bART) ).mint( msg.sender, payout );
 
         emit Deposit(msg.sender, _amount);
     }
@@ -256,14 +256,14 @@ contract DaiArtPresale is Ownable {
 
         FRAX.safeTransferFrom( msg.sender, DAO, _amount );
 
-        IAlphaArt( address(aART) ).mint( WARCHEST, payout );
+        IBetaArt( address(bART) ).mint( WARCHEST, payout );
 
         emit Deposit(msg.sender, _amount);
     }
 
     /**
-     *  @notice it deposits aART to withdraw ART from the sale
-     *  @param _amount: amount of aART to deposit to sale (9 decimals)
+     *  @notice it deposits bART to withdraw ART from the sale
+     *  @param _amount: amount of bART to deposit to sale (9 decimals)
      */
     function withdraw(uint256 _amount) external checkIfPaused {
         require(claimable, 'ART is not yet claimable');
@@ -275,11 +275,11 @@ contract DaiArtPresale is Ownable {
 
         totalDebt = totalDebt.sub(_amount);
 
-        aART.safeTransferFrom( msg.sender, address(this), _amount );
+        bART.safeTransferFrom( msg.sender, address(this), _amount );
 
         ART.safeTransfer( msg.sender, _amount );
 
-        emit Mint(address(aART), msg.sender, _amount);
+        emit Mint(address(bART), msg.sender, _amount);
         emit Withdraw(address(ART), msg.sender, _amount);
     }
 
@@ -288,9 +288,9 @@ contract DaiArtPresale is Ownable {
         UserInfo memory user = userInfo[_user];
         return cap.sub(user.amount);
     }
-    // @notice it claims aART back from the sale
-    function claimAlphaArt() external checkIfPaused {
-        require(claimAlpha, 'aART is not yet claimable');
+    // @notice it claims bART back from the sale
+    function claimBetaArt() external checkIfPaused {
+        require(claimBeta, 'bART is not yet claimable');
 
         UserInfo storage user = userInfo[msg.sender];
 
@@ -302,9 +302,9 @@ contract DaiArtPresale is Ownable {
         uint256 payout = user.debt;
         user.debt = 0;
 
-        aART.safeTransfer( msg.sender, payout );
+        bART.safeTransfer( msg.sender, payout );
 
-        emit Withdraw(address(aART),msg.sender, payout);
+        emit Withdraw(address(bART),msg.sender, payout);
     }
 
 }
