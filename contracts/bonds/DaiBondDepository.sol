@@ -29,7 +29,7 @@ interface IStakingHelper {
     function stake( uint _amount, address _recipient ) external;
 }
 
-contract FraxBondDepository is Policy {
+contract DaiBondDepository is Policy {
 
     using FixedPoint for *;
     using SafeERC20 for IERC20;
