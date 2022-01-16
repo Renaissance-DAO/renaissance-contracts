@@ -34,7 +34,7 @@ contract BetaArtPresale is Ownable {
 
     address public DAO; // Multisig treasury to send proceeds to
 
-    address public WARCHEST; // Multisig to send team proceeds to
+    address public CANVAS; // Multisig to send team proceeds to
 
     uint256 public price = 20 * 1e18; // 20 DAI per ART
 
@@ -80,7 +80,7 @@ contract BetaArtPresale is Ownable {
         address _DAI,
         address _FRAX,
         address _DAO,
-        address _WARCHEST
+        address _CANVAS
     ) {
         require( _bART != address(0) );
         bART = IERC20(_bART);
@@ -92,8 +92,8 @@ contract BetaArtPresale is Ownable {
         FRAX = IERC20(_FRAX);
         require( _DAO != address(0) );
         DAO = _DAO;
-        require( _WARCHEST != address(0) );
-        WARCHEST = _WARCHEST;
+        require( _CANVAS != address(0) );
+        CANVAS = _CANVAS;
     }
 
     //* @notice modifer to check if contract is paused
@@ -256,7 +256,7 @@ contract BetaArtPresale is Ownable {
 
         FRAX.safeTransferFrom( msg.sender, DAO, _amount );
 
-        IBetaArt( address(bART) ).mint( WARCHEST, payout );
+        IBetaArt( address(bART) ).mint( CANVAS, payout );
 
         emit Deposit(msg.sender, _amount);
     }
