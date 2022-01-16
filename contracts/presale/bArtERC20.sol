@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity 0.7.5;
 
-import "./types/ERC20Permit.sol";
+import "../types/ERC20Permit.sol";
 
-import "./types/Policy.sol";
+import "../types/Policy.sol";
 
 contract PresaleOwned is Policy {
     
