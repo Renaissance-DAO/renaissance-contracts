@@ -3,9 +3,7 @@ pragma solidity 0.7.5;
 
 import "./types/ERC20Permit.sol";
 
-import "./types/Policy.sol";
-
-contract sArt is ERC20Permit, Policy {
+contract sArt is ERC20Permit {
 
     using SafeMath for uint256;
 
@@ -58,7 +56,7 @@ contract sArt is ERC20Permit, Policy {
     }
 
     function initialize( address stakingContract_ ) external returns ( bool ) {
-        require( msg.sender == initializer );
+        require(msg.sender == initializer, "Initializer:  caller is not initializer");
         require( stakingContract_ != address(0) );
         stakingContract = stakingContract_;
         _gonBalances[ stakingContract ] = TOTAL_GONS;
@@ -70,8 +68,9 @@ contract sArt is ERC20Permit, Policy {
         return true;
     }
 
-    function setIndex( uint _INDEX ) external onlyPolicy() returns ( bool ) {
-        require( INDEX == 0 );
+    function setIndex( uint _INDEX ) external returns ( bool ) {
+        require(msg.sender == initializer, "Initializer:  caller is not initializer");
+        require( INDEX == 0, "Cannot set INDEX again" );
         INDEX = gonsForBalance( _INDEX );
         return true;
     }

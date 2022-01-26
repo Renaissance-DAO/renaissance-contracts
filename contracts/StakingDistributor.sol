@@ -3,15 +3,14 @@
 pragma solidity 0.7.5;
 
 import './libraries/SafeERC20.sol';
-
 import './types/Policy.sol';
-
+import "./types/RenaissanceAccessControlled.sol";
 
 interface ITreasury {
     function mintRewards( address _recipient, uint _amount ) external;
 }
 
-contract Distributor is Policy {
+contract Distributor is RenaissanceAccessControlled {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
     
@@ -46,7 +45,13 @@ contract Distributor is Policy {
     
     /* ====== CONSTRUCTOR ====== */
 
-    constructor( address _treasury, address _art, uint _epochLength, uint _nextEpochBlock ) {
+    constructor( 
+        address _treasury, 
+        address _art, 
+        uint _epochLength, 
+        uint _nextEpochBlock,
+        address _authority
+    ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _treasury != address(0) );
         treasury = _treasury;
         require( _art != address(0) );
@@ -143,7 +148,7 @@ contract Distributor is Policy {
         @param _recipient address
         @param _rewardRate uint
      */
-    function addRecipient( address _recipient, uint _rewardRate ) external onlyPolicy() {
+    function addRecipient( address _recipient, uint _rewardRate ) external onlyGovernor() {
         require( _recipient != address(0) );
         info.push( Info({
             recipient: _recipient,
@@ -156,7 +161,7 @@ contract Distributor is Policy {
         @param _index uint
         @param _recipient address
      */
-    function removeRecipient( uint _index, address _recipient ) external onlyPolicy() {
+    function removeRecipient( uint _index, address _recipient ) external onlyGovernor() {
         require( _recipient == info[ _index ].recipient );
         info[ _index ].recipient = address(0);
         info[ _index ].rate = 0;

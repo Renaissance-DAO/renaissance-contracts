@@ -2,10 +2,9 @@
 pragma solidity 0.7.5;
 
 import './libraries/SafeERC20.sol';
-
 import './types/Policy.sol';
-
 import "./interfaces/IERC20Metadata.sol";
+import "./types/RenaissanceAccessControlled.sol";
 
 interface IARTERC20 {
     function burnFrom(address account_, uint256 amount_) external;
@@ -15,7 +14,7 @@ interface IBondCalculator {
   function valuation( address pair_, uint amount_ ) external view returns ( uint _value );
 }
 
-contract RenaissanceTreasury is Ownable {
+contract RenaissanceTreasury is RenaissanceAccessControlled {
 
     using SafeMath for uint;
     using SafeERC20 for IERC20;
@@ -83,29 +82,11 @@ contract RenaissanceTreasury is Ownable {
 
     constructor (
         address _ART,
-        address _DAI,
-        address _Frax,
-        address _ARTFRAX,
-        address _bondCalculator,
-        address _DAO
-        uint _blocksNeededForQueue
-    ) {
+        uint _blocksNeededForQueue,
+        address _authority
+    ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _ART != address(0) );
         ART = _ART;
-
-        isReserveToken[ _DAI ] = true;
-        reserveTokens.push( _DAI );
-
-        isReserveToken[ _Frax] = true;
-        reserveTokens.push( _Frax );
-
-        isLiquidityToken[ _ARTFRAX ] = true;
-        liquidityTokens.push( _ARTFRAX );
-
-        bondCalculator[ _ARTFRAX ] = _bondCalculator;
-
-        isReserveDepositor[ _DAO ] = true;
-        reserveDepositors.push(_DAO);
 
         blocksNeededForQueue = _blocksNeededForQueue;
     }
@@ -267,7 +248,7 @@ contract RenaissanceTreasury is Ownable {
         @notice takes inventory of all tracked assets
         @notice always consolidate to recognized reserves before audit
      */
-    function auditReserves() external onlyManager() {
+    function auditReserves() external onlyGovernor() {
         uint reserves;
         for( uint i = 0; i < reserveTokens.length; i++ ) {
             reserves = reserves.add ( 
@@ -305,7 +286,7 @@ contract RenaissanceTreasury is Ownable {
         @param _address address
         @return bool
      */
-    function queue( MANAGING _managing, address _address ) external onlyManager() returns ( bool ) {
+    function queue( MANAGING _managing, address _address ) external onlyGovernor() returns ( bool ) {
         require( _address != address(0) );
         if ( _managing == MANAGING.RESERVEDEPOSITOR ) { // 0
             reserveDepositorQueue[ _address ] = block.number.add( blocksNeededForQueue );
@@ -340,7 +321,7 @@ contract RenaissanceTreasury is Ownable {
         @param _calculator address
         @return bool
      */
-    function toggle( MANAGING _managing, address _address, address _calculator ) external onlyManager() returns ( bool ) {
+    function toggle( MANAGING _managing, address _address, address _calculator ) external onlyGovernor() returns ( bool ) {
         require( _address != address(0) );
         bool result;
         if ( _managing == MANAGING.RESERVEDEPOSITOR ) { // 0

@@ -2,38 +2,17 @@
 pragma solidity ^0.7.5;
 
 import "./interfaces/IART.sol";
-
 import "./types/ERC20Permit.sol";
-
 import "./types/Ownable.sol";
-
-contract VaultOwned is Ownable {
-    
-  address internal _vault;
-
-  function setVault( address vault_ ) external onlyOwner() returns ( bool ) {
-    _vault = vault_;
-
-    return true;
-  }
-
-  function vault() public view returns (address) {
-    return _vault;
-  }
-
-  modifier onlyVault() {
-    require( _vault == msg.sender, "VaultOwned: caller is not the Vault" );
-    _;
-  }
-
-}
+import "./types/RenaissanceAccessControlled.sol";
 
 contract Art is ERC20Permit, IART, VaultOwned {
   using SafeMath for uint256;
 
     constructor(address _authority)
     ERC20("Rome", "ROME", 9)
-    ERC20Permit("Rome") {}
+    ERC20Permit("Rome") 
+    RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {}
 
     function mint(address account_, uint256 amount_) external override onlyVault {
         _mint(account_, amount_);

@@ -2,14 +2,11 @@
 pragma solidity 0.7.5;
 
 import "../types/Policy.sol";
-
 import "../types/ERC20Permit.sol";
-
 import "../libraries/SafeERC20.sol";
-
 import "../libraries/FixedPoint.sol";
-
 import "../interfaces/IERC20Metadata.sol";
+import "../types/RenaissanceAccessControlled.sol";
 
 interface ITreasury {
     function deposit( uint _amount, address _token, uint _profit ) external returns ( bool );
@@ -53,7 +50,7 @@ contract DaiBondDepository is Policy {
     address public immutable ART; // token given as payment for bond
     address public immutable principle; // token used to create bond
     address public immutable treasury; // mints ART when receives principle
-    address public immutable CANVAS; // receives fee from principle
+    address public immutable PALETTE; // receives fee from principle
 
     bool public immutable isLiquidityBond; // LP and Reserve bonds are treated slightly different
     address public immutable bondCalculator; // calculates value of LP tokens
@@ -113,17 +110,18 @@ contract DaiBondDepository is Policy {
         address _ART,
         address _principle,
         address _treasury, 
-        address _CANVAS,
-        address _bondCalculator
-    ) {
+        address _PALETTE,
+        address _bondCalculator,
+        address _authority
+    ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _ART != address(0) );
         ART = _ART;
         require( _principle != address(0) );
         principle = _principle;
         require( _treasury != address(0) );
         treasury = _treasury;
-        require( _CANVAS != address(0) );
-        CANVAS = _CANVAS;
+        require( _PALETTE != address(0) );
+        PALETTE = _PALETTE;
         // bondCalculator should be address(0) if not LP bond
         bondCalculator = _bondCalculator;
         isLiquidityBond = ( _bondCalculator != address(0) );
@@ -181,7 +179,7 @@ contract DaiBondDepository is Policy {
             require( _input <= 1000, "Payout cannot be above 1 percent" );
             terms.maxPayout = _input;
         } else if ( _parameter == PARAMETER.FEE ) { // 2
-            require( _input <= 20000, "CANVAS fee cannot exceed payout" );
+            require( _input <= 20000, "PALETTE fee cannot exceed payout" );
             terms.fee = _input;
         } else if ( _parameter == PARAMETER.DEBT ) { // 3
             terms.maxDebt = _input;
@@ -275,8 +273,8 @@ contract DaiBondDepository is Policy {
         IERC20( principle ).approve( address( treasury ), _amount );
         ITreasury( treasury ).deposit( _amount, principle, profit );
         
-        if ( fee != 0 ) { // fee is transferred to CANVAS
-            IERC20( ART ).safeTransfer( CANVAS, fee );
+        if ( fee != 0 ) { // fee is transferred to PALETTE
+            IERC20( ART ).safeTransfer( PALETTE, fee );
         }
         
         // total debt is increased
@@ -531,13 +529,13 @@ contract DaiBondDepository is Policy {
     /* ======= AUXILLIARY ======= */
 
     /**
-     *  @notice allow anyone to send lost tokens (excluding principle or ART) to the CANVAS
+     *  @notice allow anyone to send lost tokens (excluding principle or ART) to the PALETTE
      *  @return bool
      */
     function recoverLostToken( address _token ) external returns ( bool ) {
         require( _token != ART );
         require( _token != principle );
-        IERC20( _token ).safeTransfer( CANVAS, IERC20( _token ).balanceOf( address(this) ) );
+        IERC20( _token ).safeTransfer( PALETTE, IERC20( _token ).balanceOf( address(this) ) );
         return true;
     }
 }
