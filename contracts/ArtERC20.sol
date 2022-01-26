@@ -32,8 +32,8 @@ contract Art is ERC20Permit, IART, VaultOwned {
   using SafeMath for uint256;
 
     constructor(address _authority)
-    ERC20("Rome", "ROME", 9)
-    ERC20Permit("Rome") {}
+    ERC20("Art", "ART", 9)
+    ERC20Permit("Art") {}
 
     function mint(address account_, uint256 amount_) external override onlyVault {
         _mint(account_, amount_);
