@@ -28,11 +28,6 @@ abstract contract RenaissanceAccessControlled {
         _;
     }
 
-    modifier onlyGuardian() {
-        require(msg.sender == authority.guardian(), UNAUTHORIZED);
-        _;
-    }
-
     modifier onlyPolicy() {
         require(msg.sender == authority.policy(), UNAUTHORIZED);
         _;

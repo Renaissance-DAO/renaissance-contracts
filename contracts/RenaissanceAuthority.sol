@@ -9,15 +9,11 @@ contract RenaissanceAuthority is IRenaissanceAuthority, RenaissanceAccessControl
 
     address public override governor;
 
-    address public override guardian;
-
     address public override policy;
 
     address public override vault;
 
     address public newGovernor;
-
-    address public newGuardian;
 
     address public newPolicy;
 
@@ -27,14 +23,11 @@ contract RenaissanceAuthority is IRenaissanceAuthority, RenaissanceAccessControl
 
     constructor(
         address _governor,
-        address _guardian,
         address _policy,
         address _vault
     ) RenaissanceAccessControlled(IRenaissanceAuthority(address(this))) {
         governor = _governor;
         emit GovernorPushed(address(0), governor, true);
-        guardian = _guardian;
-        emit GuardianPushed(address(0), guardian, true);
         policy = _policy;
         emit PolicyPushed(address(0), policy, true);
         vault = _vault;
@@ -47,12 +40,6 @@ contract RenaissanceAuthority is IRenaissanceAuthority, RenaissanceAccessControl
         if (_effectiveImmediately) governor = _newGovernor;
         newGovernor = _newGovernor;
         emit GovernorPushed(governor, newGovernor, _effectiveImmediately);
-    }
-
-    function pushGuardian(address _newGuardian, bool _effectiveImmediately) external onlyGovernor {
-        if (_effectiveImmediately) guardian = _newGuardian;
-        newGuardian = _newGuardian;
-        emit GuardianPushed(guardian, newGuardian, _effectiveImmediately);
     }
 
     function pushPolicy(address _newPolicy, bool _effectiveImmediately) external onlyGovernor {
@@ -73,12 +60,6 @@ contract RenaissanceAuthority is IRenaissanceAuthority, RenaissanceAccessControl
         require(msg.sender == newGovernor, "!newGovernor");
         emit GovernorPulled(governor, newGovernor);
         governor = newGovernor;
-    }
-
-    function pullGuardian() external {
-        require(msg.sender == newGuardian, "!newGuard");
-        emit GuardianPulled(guardian, newGuardian);
-        guardian = newGuardian;
     }
 
     function pullPolicy() external {
