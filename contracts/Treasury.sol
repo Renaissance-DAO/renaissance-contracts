@@ -82,11 +82,23 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
 
     constructor (
         address _ART,
+        address _DAI,
+        address _FRAX,
+        address _DAO,
         uint _blocksNeededForQueue,
         address _authority
     ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _ART != address(0) );
         ART = _ART;
+
+        isReserveToken[ _DAI ] = true;
+        reserveTokens.push( _DAI );
+
+        isReserveToken[ _FRAX] = true;
+        reserveTokens.push( _FRAX );
+
+        isReserveDepositor[ _DAO ] = true;
+        reserveDepositors.push(_DAO);
 
         blocksNeededForQueue = _blocksNeededForQueue;
     }

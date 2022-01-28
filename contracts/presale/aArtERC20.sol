@@ -2,14 +2,13 @@
 pragma solidity 0.7.5;
 
 import "../types/ERC20Permit.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../types/Policy.sol";
-
-contract PresaleOwned is Policy {
+contract PresaleOwned is Ownable {
     
   address internal _presale;
 
-  function setPresale( address presale_ ) external onlyPolicy() returns ( bool ) {
+  function setPresale( address presale_ ) external onlyOwner returns ( bool ) {
     _presale = presale_;
 
     return true;
