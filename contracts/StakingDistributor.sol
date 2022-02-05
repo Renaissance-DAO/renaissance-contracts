@@ -47,15 +47,15 @@ contract Distributor is RenaissanceAccessControlled {
 
     constructor( 
         address _treasury, 
-        address _art, 
+        address _ART, 
         uint _epochLength, 
         uint _nextEpochBlock,
         address _authority
     ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _treasury != address(0) );
         treasury = _treasury;
-        require( _art != address(0) );
-        ART = _art;
+        require( _ART != address(0) );
+        ART = _ART;
         epochLength = _epochLength;
         nextEpochBlock = _nextEpochBlock;
     }

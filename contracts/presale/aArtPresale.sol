@@ -36,9 +36,10 @@ contract aArtPresale is Ownable {
 
     address public PALETTE; // Multisig to send team proceeds to
 
-    uint256 public price = 20 * 1e18; // 20 FRAX per ART
+    uint256 public price = 25 * 1e18; // 20 FRAX per ART
 
-    uint256 public cap = 1000 * 1e18; // 1000 FRAX cap per whitelisted user
+    uint256 public capA = 1000 * 1e18; // 1000 FRAX cap per whitelisted user
+    uint256 public capB = 500 * 1e18; // 500 FRAX cap per whitelisted user
 
     uint256 public totalRaisedDAI; // total DAI raised by sale
     uint256 public totalRaisedFRAX; // total FRAX raised by sale
@@ -59,7 +60,8 @@ contract aArtPresale is Ownable {
 
     mapping(address => TeamInfo) public teamInfo;
 
-    mapping(address => bool) public whitelisted; // True if user is whitelisted
+    mapping(address => bool) public whitelistedA; // True if user is whitelisted
+    mapping(address => bool) public whitelistedB; // True if user is whitelisted
 
     mapping(address => bool) public whitelistedTeam; // True if team member is whitelisted
 
@@ -105,20 +107,33 @@ contract aArtPresale is Ownable {
      *  @notice adds a single whitelist to the sale
      *  @param _address: address to whitelist
      */
-    function addWhitelist(address _address) external onlyOwner {
+    function addWhitelistA(address _address) external onlyOwner {
         require(!started, "Sale has already started");
-        whitelisted[_address] = true;
+        whitelistedA[_address] = true;
+    }
+
+    function addWhitelistB(address _address) external onlyOwner {
+        require(!started, "Sale has already started");
+        whitelistedB[_address] = true;
     }
 
     /**
      *  @notice adds multiple whitelist to the sale
      *  @param _addresses: dynamic array of addresses to whitelist
      */
-    function addMultipleWhitelist(address[] calldata _addresses) external onlyOwner {
+    function addMultipleWhitelistA(address[] calldata _addresses) external onlyOwner {
         require(!started, "Sale has already started");
         require(_addresses.length <= 333,"too many addresses");
         for (uint256 i = 0; i < _addresses.length; i++) {
-            whitelisted[_addresses[i]] = true;
+            whitelistedA[_addresses[i]] = true;
+        }
+    }
+
+    function addMultipleWhitelistB(address[] calldata _addresses) external onlyOwner {
+        require(!started, "Sale has already started");
+        require(_addresses.length <= 333,"too many addresses");
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            whitelistedB[_addresses[i]] = true;
         }
     }
 
@@ -126,10 +141,16 @@ contract aArtPresale is Ownable {
      *  @notice removes a single whitelist from the sale
      *  @param _address: address to remove from whitelist
      */
-    function removeWhitelist(address _address) external onlyOwner {
+    function removeWhitelistA(address _address) external onlyOwner {
         require(!started, "Sale has already started");
-        whitelisted[_address] = false;
+        whitelistedA[_address] = false;
     }
+
+    function removeWhitelistB(address _address) external onlyOwner {
+        require(!started, "Sale has already started");
+        whitelistedB[_address] = false;
+    }
+
     /**
      *  @notice adds a team member from sale
      *  @param _address: address to whitelist
@@ -205,17 +226,24 @@ contract aArtPresale is Ownable {
      *  @notice it deposits FRAX for the sale
      *  @param _amount: amount of FRAX to deposit to sale (18 decimals)
      */
-    function deposit(uint256 _amount) external checkIfPaused {
+    function depositA(uint256 _amount) external checkIfPaused {
         require(started, 'Sale has not started');
         require(!ended, 'Sale has ended');
-        require(whitelisted[msg.sender] == true, 'msg.sender is not whitelisted user');
+        require(whitelistedA[msg.sender] == true || whitelistedB[msg.sender] == true, 'msg.sender is not whitelisted A user');
 
         UserInfo storage user = userInfo[msg.sender];
 
-        require(
-            cap >= user.amount.add(_amount),
-            'new amount above user limit'
+        if (whitelistedA[msg.sender] == true) {
+            require(
+                capA >= user.amount.add(_amount),
+                'new amount above user A limit'
             );
+        } else {
+            require(
+                capB >= user.amount.add(_amount),
+                'new amount above user B limit'
+            );
+        }
 
         user.amount = user.amount.add(_amount);
         totalRaisedFRAX = totalRaisedFRAX.add(_amount);
@@ -230,6 +258,7 @@ contract aArtPresale is Ownable {
 
         emit Deposit(msg.sender, _amount);
     }
+
     /**
      *  @notice it deposits DAI for the sale
      *  @param _amount: amount of DAI to deposit to sale (18 decimals)
@@ -243,7 +272,7 @@ contract aArtPresale is Ownable {
         TeamInfo storage team = teamInfo[msg.sender];
 
         require(
-            cap.mul(team.numWhitelist) >= team.amount.add(_amount),
+            capA.mul(team.numWhitelist) >= team.amount.add(_amount),
             'new amount above team limit'
             );
 
@@ -283,10 +312,15 @@ contract aArtPresale is Ownable {
         emit Withdraw(address(ART), msg.sender, _amount);
     }
 
-    // @notice it checks a users DAI allocation remaining
+    // @notice it checks a users FRAX allocation remaining
     function getUserRemainingAllocation(address _user) external view returns ( uint256 ) {
         UserInfo memory user = userInfo[_user];
-        return cap.sub(user.amount);
+        if (whitelistA[_user] == true) {
+            return capA.sub(user.amount);
+        } else if (whitelistB[_user] == true) {
+            return capB.sub(user.amount);
+        }
+        return 0;
     }
     // @notice it claims aART back from the sale
     function claimAlphaArt() external checkIfPaused {
