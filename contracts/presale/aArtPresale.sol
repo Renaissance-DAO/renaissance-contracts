@@ -226,7 +226,7 @@ contract aArtPresale is Ownable {
      *  @notice it deposits FRAX for the sale
      *  @param _amount: amount of FRAX to deposit to sale (18 decimals)
      */
-    function depositA(uint256 _amount) external checkIfPaused {
+    function deposit(uint256 _amount) external checkIfPaused {
         require(started, 'Sale has not started');
         require(!ended, 'Sale has ended');
         require(whitelistedA[msg.sender] == true || whitelistedB[msg.sender] == true, 'msg.sender is not whitelisted A user');
