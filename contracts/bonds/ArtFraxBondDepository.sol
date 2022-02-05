@@ -26,7 +26,7 @@ interface IStakingHelper {
     function stake( uint _amount, address _recipient ) external;
 }
 
-contract ArtFraxBondDepository is Policy {
+contract ArtFraxBondDepository is RenaissanceAccessControlled {
 
     using FixedPoint for *;
     using SafeERC20 for IERC20;

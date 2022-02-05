@@ -26,7 +26,7 @@ interface IStakingHelper {
     function stake( uint _amount, address _recipient ) external;
 }
 
-contract DaiBondDepository is Policy {
+contract DaiBondDepository is RenaissanceAccessControlled {
 
     using FixedPoint for *;
     using SafeERC20 for IERC20;

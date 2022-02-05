@@ -6,6 +6,7 @@ import "../types/ERC20Permit.sol";
 import "../libraries/SafeERC20.sol";
 import "../libraries/FixedPoint.sol";
 import "../interfaces/IERC20Metadata.sol";
+import "../types/RenaissanceAccessControlled.sol";
 
 interface ITreasury {
     function deposit( uint _amount, address _token, uint _profit ) external returns ( bool );
@@ -25,7 +26,7 @@ interface IStakingHelper {
     function stake( uint _amount, address _recipient ) external;
 }
 
-contract FraxBondDepository is Policy {
+contract FraxBondDepository is RenaissanceAccessControlled {
 
     using FixedPoint for *;
     using SafeERC20 for IERC20;

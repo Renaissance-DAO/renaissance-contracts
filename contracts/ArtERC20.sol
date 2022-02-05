@@ -6,7 +6,7 @@ import "./types/ERC20Permit.sol";
 import "./types/Ownable.sol";
 import "./types/RenaissanceAccessControlled.sol";
 
-contract Art is ERC20Permit, IART, VaultOwned {
+contract Art is ERC20Permit, IART, RenaissanceAccessControlled {
   using SafeMath for uint256;
 
     constructor(address _authority)

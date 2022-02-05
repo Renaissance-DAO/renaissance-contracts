@@ -2,7 +2,6 @@
 pragma solidity 0.7.5;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IaArt {
@@ -315,9 +314,9 @@ contract aArtPresale is Ownable {
     // @notice it checks a users FRAX allocation remaining
     function getUserRemainingAllocation(address _user) external view returns ( uint256 ) {
         UserInfo memory user = userInfo[_user];
-        if (whitelistA[_user] == true) {
+        if (whitelistedA[_user] == true) {
             return capA.sub(user.amount);
-        } else if (whitelistB[_user] == true) {
+        } else if (whitelistedB[_user] == true) {
             return capB.sub(user.amount);
         }
         return 0;

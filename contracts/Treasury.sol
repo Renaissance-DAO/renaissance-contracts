@@ -8,6 +8,8 @@ import "./types/RenaissanceAccessControlled.sol";
 
 interface IARTERC20 {
     function burnFrom(address account_, uint256 amount_) external;
+    function mint( uint256 amount_ ) external;
+    function mint( address account_, uint256 ammount_ ) external;
 }
 
 interface IBondCalculator {
@@ -120,10 +122,10 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
             require( isLiquidityDepositor[ msg.sender ], "Not approved" );
         }
 
-        uint value = valueOf(_token, _amount);
+        uint value = valueOf( _token, _amount );
         // mint ART needed and store amount of rewards for distribution
         send_ = value.sub( _profit );
-        IERC20Mintable( ART ).mint( msg.sender, send_ );
+        IARTERC20( ART ).mint( msg.sender, send_ );
 
         totalReserves = totalReserves.add( value );
         emit ReservesUpdated( totalReserves );
@@ -225,7 +227,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
             require( isReserveManager[ msg.sender ], "Not approved" );
         }
 
-        uint value = valueOf(_token, _amount);
+        uint value = valueOf( _token, _amount );
         require( value <= excessReserves(), "Insufficient reserves" );
 
         totalReserves = totalReserves.sub( value );
@@ -243,7 +245,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
         require( isRewardManager[ msg.sender ], "Not approved" );
         require( _amount <= excessReserves(), "Insufficient reserves" );
 
-        IERC20Mintable( ART ).mint( _recipient, _amount );
+        IARTERC20( ART ).mint( _recipient, _amount );
 
         emit RewardsMinted( msg.sender, _recipient, _amount );
     } 
@@ -260,7 +262,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
         @notice takes inventory of all tracked assets
         @notice always consolidate to recognized reserves before audit
      */
-    function auditReserves() external onlyGovernor() {
+    function auditReserves() external onlyPolicy() {
         uint reserves;
         for( uint i = 0; i < reserveTokens.length; i++ ) {
             reserves = reserves.add ( 
@@ -286,7 +288,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
     function valueOf( address _token, uint _amount ) public view returns ( uint value_ ) {
         if ( isReserveToken[ _token ] ) {
             // convert amount to match ART decimals
-            value_ = _amount.mul( 10 ** IERC20( ART ).decimals() ).div( 10 ** IERC20( _token ).decimals() );
+            value_ = _amount.mul( 10 ** IERC20Metadata( ART ).decimals() ).div( 10 ** IERC20Metadata( _token ).decimals() );
         } else if ( isLiquidityToken[ _token ] ) {
             value_ = IBondCalculator( bondCalculator[ _token ] ).valuation( _token, _amount );
         }
@@ -298,7 +300,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
         @param _address address
         @return bool
      */
-    function queue( MANAGING _managing, address _address ) external onlyGovernor() returns ( bool ) {
+    function queue( MANAGING _managing, address _address ) external onlyPolicy() returns ( bool ) {
         require( _address != address(0) );
         if ( _managing == MANAGING.RESERVEDEPOSITOR ) { // 0
             reserveDepositorQueue[ _address ] = block.number.add( blocksNeededForQueue );
@@ -333,7 +335,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
         @param _calculator address
         @return bool
      */
-    function toggle( MANAGING _managing, address _address, address _calculator ) external onlyGovernor() returns ( bool ) {
+    function toggle( MANAGING _managing, address _address, address _calculator ) external onlyPolicy() returns ( bool ) {
         require( _address != address(0) );
         bool result;
         if ( _managing == MANAGING.RESERVEDEPOSITOR ) { // 0
