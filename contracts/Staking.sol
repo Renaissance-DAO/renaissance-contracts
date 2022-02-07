@@ -2,8 +2,8 @@
 pragma solidity 0.7.5;
 
 import "./libraries/SafeERC20.sol";
-
 import "./types/Policy.sol";
+import "./types/RenaissanceAccessControlled.sol";
 
 interface IsART {
     function rebase( uint256 renaissanceProfit_, uint epoch_) external returns (uint256);
@@ -27,7 +27,7 @@ interface IDistributor {
     function distribute() external returns ( bool );
 }
 
-contract RenaissanceStaking is Policy {
+contract RenaissanceStaking is RenaissanceAccessControlled {
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -56,8 +56,9 @@ contract RenaissanceStaking is Policy {
         address _sART,
         uint _epochLength,
         uint _firstEpochNumber,
-        uint _firstEpochBlock
-    ) {
+        uint _firstEpochBlock,
+        address _authority
+    ) RenaissanceAccessControlled(IRenaissanceAuthority(_authority)) {
         require( _ART != address(0) );
         ART = _ART;
         require( _sART != address(0) );
