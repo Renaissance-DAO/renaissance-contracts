@@ -68,7 +68,7 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712 {
      */
     // solhint-disable-next-line func-name-mixedcase
     function DOMAIN_SEPARATOR() external view override returns (bytes32) {
-        return _domainSeparatorV4();
+        return super._domainSeparatorV4();
     }
 
     /**
