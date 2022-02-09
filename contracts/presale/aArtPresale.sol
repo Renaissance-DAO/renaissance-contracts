@@ -2,6 +2,7 @@
 pragma solidity 0.7.5;
 
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IaArt {
@@ -35,10 +36,9 @@ contract aArtPresale is Ownable {
 
     address public PALETTE; // Multisig to send team proceeds to
 
-    uint256 public price = 25 * 1e18; // 20 FRAX per ART
+    uint256 public price = 20 * 1e18; // 20 FRAX per ART
 
-    uint256 public capA = 1000 * 1e18; // 1000 FRAX cap per whitelisted user
-    uint256 public capB = 500 * 1e18; // 500 FRAX cap per whitelisted user
+    uint256 public cap = 1000 * 1e18; // 1000 FRAX cap per whitelisted user
 
     uint256 public totalRaisedDAI; // total DAI raised by sale
     uint256 public totalRaisedFRAX; // total FRAX raised by sale
@@ -59,8 +59,7 @@ contract aArtPresale is Ownable {
 
     mapping(address => TeamInfo) public teamInfo;
 
-    mapping(address => bool) public whitelistedA; // True if user is whitelisted
-    mapping(address => bool) public whitelistedB; // True if user is whitelisted
+    mapping(address => bool) public whitelisted; // True if user is whitelisted
 
     mapping(address => bool) public whitelistedTeam; // True if team member is whitelisted
 
@@ -128,7 +127,7 @@ contract aArtPresale is Ownable {
     function addMultipleWhitelistB(address[] calldata _addresses) external onlyOwner {
         require(_addresses.length <= 333,"too many addresses");
         for (uint256 i = 0; i < _addresses.length; i++) {
-            whitelistedB[_addresses[i]] = true;
+            whitelisted[_addresses[i]] = true;
         }
     }
 
@@ -220,21 +219,14 @@ contract aArtPresale is Ownable {
     function deposit(uint256 _amount) external checkIfPaused {
         require(started, 'Sale has not started');
         require(!ended, 'Sale has ended');
-        require(whitelistedA[msg.sender] == true || whitelistedB[msg.sender] == true, 'msg.sender is not whitelisted A user');
+        require(whitelisted[msg.sender] == true, 'msg.sender is not whitelisted user');
 
         UserInfo storage user = userInfo[msg.sender];
 
-        if (whitelistedA[msg.sender] == true) {
-            require(
-                capA >= user.amount.add(_amount),
-                'new amount above user A limit'
+        require(
+            cap >= user.amount.add(_amount),
+            'new amount above user limit'
             );
-        } else {
-            require(
-                capB >= user.amount.add(_amount),
-                'new amount above user B limit'
-            );
-        }
 
         user.amount = user.amount.add(_amount);
         totalRaisedFRAX = totalRaisedFRAX.add(_amount);
@@ -249,7 +241,6 @@ contract aArtPresale is Ownable {
 
         emit Deposit(msg.sender, _amount);
     }
-
     /**
      *  @notice it deposits DAI for the sale
      *  @param _amount: amount of DAI to deposit to sale (18 decimals)
@@ -263,7 +254,7 @@ contract aArtPresale is Ownable {
         TeamInfo storage team = teamInfo[msg.sender];
 
         require(
-            capA.mul(team.numWhitelist) >= team.amount.add(_amount),
+            cap.mul(team.numWhitelist) >= team.amount.add(_amount),
             'new amount above team limit'
             );
 
@@ -303,15 +294,10 @@ contract aArtPresale is Ownable {
         emit Withdraw(address(ART), msg.sender, _amount);
     }
 
-    // @notice it checks a users FRAX allocation remaining
+    // @notice it checks a users DAI allocation remaining
     function getUserRemainingAllocation(address _user) external view returns ( uint256 ) {
         UserInfo memory user = userInfo[_user];
-        if (whitelistedA[_user] == true) {
-            return capA.sub(user.amount);
-        } else if (whitelistedB[_user] == true) {
-            return capB.sub(user.amount);
-        }
-        return 0;
+        return cap.sub(user.amount);
     }
     // @notice it claims aART back from the sale
     function claimAlphaArt() external checkIfPaused {
