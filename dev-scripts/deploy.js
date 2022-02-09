@@ -69,7 +69,6 @@ async function main(){
     await aart.transferOwnership(governorAddress);
 
     // Setting vault authority to treasury.
-    [owner, _] = await ethers.getSigners();
     await renaissanceAuthority.pushVault(treasury.address, true);
 }
 
