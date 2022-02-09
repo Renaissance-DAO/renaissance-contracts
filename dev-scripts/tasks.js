@@ -46,8 +46,22 @@ task("start-sale", "Start presale").setAction(async () => {
   console.log("Started presale");
 });
 
+task("end-presale", "stop presale").setAction(async () => {
+  const [account0] = await ethers.getSigners();
+  const A_ART_PRESALE = await ethers.getContractFactory("aArtPresale");
+  const aArtPresale = new hre.ethers.Contract(
+    A_ART_PRESALE_ADDRESS,
+    A_ART_PRESALE.interface,
+    account0
+  );
+
+  await aArtPresale.end();
+  console.log("ended presale");
+});
+
 task("whitelist-user", "whitelist a user for presale")
   .addParam("account", "The account's address to whitelist")
+  .addParam("list", "'A' or 'B'")
   .setAction(async (taskArgs) => {
     const [account0] = await ethers.getSigners();
     const A_ART_PRESALE = await ethers.getContractFactory("aArtPresale");
@@ -57,8 +71,13 @@ task("whitelist-user", "whitelist a user for presale")
       account0
     );
 
-    await aArtPresale.addWhitelist(taskArgs.account);
-    console.log("whitelisted user");
+    if (taskArgs.list) {
+      taskArgs.list.toUpperCase() === "A"
+        ? await aArtPresale.addWhitelistA(taskArgs.account)
+        : taskArgs.list.toUpperCase() === "B" &&
+          (await aArtPresale.addWhitelistB(taskArgs.account));
+      console.log("whitelisted user");
+    }
   });
 
 module.exports = {};
