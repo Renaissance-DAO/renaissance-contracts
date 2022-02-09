@@ -34,7 +34,7 @@ module.exports =  {
       },
     ],
   },
-  defaultNetwork: "aurora_local",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       chainId: +process.env.AURORA_LOCAL_CHAINID
