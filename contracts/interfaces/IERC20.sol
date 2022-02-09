@@ -60,6 +60,8 @@ interface IERC20 {
      */
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
+    function decimals() external view returns (uint8);
+
     /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
      * another (`to`).
@@ -73,4 +75,5 @@ interface IERC20 {
      * a call to {approve}. `value` is the new allowance.
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
+    
 }
