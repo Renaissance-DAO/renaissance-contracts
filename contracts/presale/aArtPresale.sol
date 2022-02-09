@@ -105,17 +105,26 @@ contract aArtPresale is Ownable {
      *  @notice adds a single whitelist to the sale
      *  @param _address: address to whitelist
      */
-    function addWhitelist(address _address) external onlyOwner {
-        require(!started, "Sale has already started");
-        whitelisted[_address] = true;
+    function addWhitelistA(address _address) external onlyOwner {
+        whitelistedA[_address] = true;
+    }
+
+    function addWhitelistB(address _address) external onlyOwner {
+        whitelistedB[_address] = true;
     }
 
     /**
      *  @notice adds multiple whitelist to the sale
      *  @param _addresses: dynamic array of addresses to whitelist
      */
-    function addMultipleWhitelist(address[] calldata _addresses) external onlyOwner {
-        require(!started, "Sale has already started");
+    function addMultipleWhitelistA(address[] calldata _addresses) external onlyOwner {
+        require(_addresses.length <= 333,"too many addresses");
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            whitelistedA[_addresses[i]] = true;
+        }
+    }
+
+    function addMultipleWhitelistB(address[] calldata _addresses) external onlyOwner {
         require(_addresses.length <= 333,"too many addresses");
         for (uint256 i = 0; i < _addresses.length; i++) {
             whitelisted[_addresses[i]] = true;
@@ -126,17 +135,20 @@ contract aArtPresale is Ownable {
      *  @notice removes a single whitelist from the sale
      *  @param _address: address to remove from whitelist
      */
-    function removeWhitelist(address _address) external onlyOwner {
-        require(!started, "Sale has already started");
-        whitelisted[_address] = false;
+    function removeWhitelistA(address _address) external onlyOwner {
+        whitelistedA[_address] = false;
     }
+
+    function removeWhitelistB(address _address) external onlyOwner {
+        whitelistedB[_address] = false;
+    }
+
     /**
      *  @notice adds a team member from sale
      *  @param _address: address to whitelist
      *  @param _numWhitelist: number of whitelists for address
      */
     function addTeam(address _address, uint256 _numWhitelist) external onlyOwner {
-        require(!started, "Sale has already started");
         require(_numWhitelist != 0, "cannot set zero whitelists");
         whitelistedTeam[_address] = true;
         teamInfo[_address].numWhitelist = _numWhitelist;
@@ -147,7 +159,6 @@ contract aArtPresale is Ownable {
      *  @param _address: address to remove from whitelist
      */
     function removeTeam(address _address) external onlyOwner {
-        require(!started, "Sale has already started");
         whitelistedTeam[_address] = false;
         delete teamInfo[_address];
     }
