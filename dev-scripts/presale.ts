@@ -1,13 +1,10 @@
 // import * as hre from "hardhat";
 import { task } from "hardhat/config";
 import virtuoso1 from "../scripts/json/virtuoso1.json";
-import virtuoso2 from "../scripts/json/virtuoso2.json";
-import virtuoso3 from "../scripts/json/virtuoso3.json";
 import maestro1 from "../scripts/json/maestro1.json";
 import { chunkArray, timeout } from "../utils/tools";
 
 const A_ART_PRESALE_ADDRESS = "0xD02Db8093a6193dF17C6e67D0298dEC65f8c2F8e";
-// const DAO_ADDRESS = "0x511fEFE374e9Cb50baF1E3f2E076c94b3eF8B03b";
 
 task("start-sale", "Start presale").setAction(async (_, hre) => {
   const [account0] = await hre.ethers.getSigners();
@@ -47,7 +44,8 @@ task("whitelist-users", "whitelist users from json")
   .addParam("dao", "The address of the DAO")
   .addParam("presale", "The address of the aArt presale contract")
   .setAction(async ({ presale, dao }, { ethers,config }) => {
-    const CHUNK_AMOUNT = 50;
+    console.log(config)
+    const CHUNK_AMOUNT = 7;
     const [deployer] = await ethers.getSigners();
 
     const Presale = await ethers.getContractFactory("aArtPresale");
@@ -67,66 +65,31 @@ task("whitelist-users", "whitelist users from json")
       await whitelistATx.wait();
       virtuososProcessed += CHUNK_AMOUNT;
       console.log(
-        `virtuosos 1 ${virtuososProcessed}/${virtuosos.flat().length} complete`
+        `virtuosos ${virtuososProcessed}/${virtuosos.flat().length} complete`
       );
-      await timeout(15000);
-      console.log("waiting 15 seconds");
-    }
-
-    const virtuosos2 = chunkArray(virtuoso2, CHUNK_AMOUNT);
-    let virtuososProcessed2 = 0;
-    for (const virtuosoChunk of virtuosos2) {
-      const whitelistATx = await presaleContract.addMultipleWhitelistA(
-        virtuosoChunk
-      );
-      await whitelistATx.wait();
-      virtuososProcessed2 += CHUNK_AMOUNT;
-      console.log(
-        `virtuosos 2 ${virtuososProcessed2}/${virtuosos2.flat().length} complete`
-      );
-      await timeout(25000);
-      console.log("waiting 25 seconds");
-    }
-
-    const virtuosos3 = chunkArray(virtuoso3, CHUNK_AMOUNT);
-    let virtuososProcessed3 = 0;
-    for (const virtuosoChunk of virtuosos3) {
-      const whitelistATx = await presaleContract.addMultipleWhitelistA(
-        virtuosoChunk
-      );
-      await whitelistATx.wait();
-      virtuososProcessed3 += CHUNK_AMOUNT;
-      console.log(
-        `virtuosos 3 ${virtuososProcessed3}/${virtuosos3.flat().length} complete`
-      );
-      await timeout(25000);
-      console.log("waiting 25 seconds");
+      await timeout(2000);
+      console.log("waiting 2 seconds");
     }
 
     const maestros = chunkArray(maestro1, CHUNK_AMOUNT);
     let maestrosProcessed = 0;
-    for (const maestroChunk of maestros) {
+    for (const virtuosoChunk of virtuosos) {
       const whitelistBTx = await presaleContract.addMultipleWhitelistB(
-        maestroChunk
+        virtuosoChunk
       );
       await whitelistBTx.wait();
       maestrosProcessed += CHUNK_AMOUNT;
       console.log(
         `maestros ${maestrosProcessed}/${maestros.flat().length} complete`
       );
-      await timeout(25000);
-      console.log("waiting 25 seconds");
+      await timeout(2000);
+      console.log("waiting 2 seconds");
     }
 
     // Team Whitelist
     console.log("whitelist DAO...");
     const addTeamTx = await presaleContract.addTeam(dao);
-    await timeout(25000);
     await addTeamTx.wait();
 
     await presaleContract.start();
-    await timeout(25000);
-    
-    await presaleContract.transferOwnership(dao);
-    await timeout(25000);
   });

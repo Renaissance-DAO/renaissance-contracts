@@ -4,11 +4,24 @@ import { timeout } from "../utils/tools";
 async function main() {
   const { chainId } = await ethers.provider.getNetwork();
   const [deployer, _] = await ethers.getSigners();
-  const daoAddress = "0x511fEFE374e9Cb50baF1E3f2E076c94b3eF8B03b";
-  const paletteAddress = "0x97A61c103397634D2470F9d3CBeeC732a3393c7a";
+  const daoAddress = deployer.address; //"0x511fEFE374e9Cb50baF1E3f2E076c94b3eF8B03b";
+  const paletteAddress = deployer.address; //"0x97A61c103397634D2470F9d3CBeeC732a3393c7a";
 
-  const daiAddress = "0xe3520349f477a5f6eb06107066048508498a291b";
-  const fraxAddress = "0xE4B9e004389d91e4134a28F19BD833cBA1d994B6";
+  const DAI = await ethers.getContractFactory("DAI");
+  const dai = await DAI.deploy(chainId);
+  await dai.deployed();
+  console.log("dai address: ", dai.address);
+  await timeout(2000);
+
+  // Deploy FRAX: stable coin.
+  const FRAX = await ethers.getContractFactory("FRAX");
+  const frax = await FRAX.deploy(chainId);
+  await frax.deployed();
+  console.log("frax address: ", frax.address);
+  await timeout(2000);
+
+  const daiAddress = dai.address; //"0xe3520349f477a5f6eb06107066048508498a291b";
+  const fraxAddress = frax.address; //"0xE4B9e004389d91e4134a28F19BD833cBA1d994B6";
 
   // Deploy RenaissanceAuthority which handles access control of contracts.
   const RenaissanceAuthority = await ethers.getContractFactory(

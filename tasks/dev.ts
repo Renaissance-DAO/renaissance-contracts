@@ -2,7 +2,7 @@ import "@nomiclabs/hardhat-ethers";
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 
-const FRAX_ADDRESS = "0xb15638e4b951bf4e5c9330ed94eec59ef2f6e61f";
+const FRAX_ADDRESS = "0xD13F312EA12708A942994f04F1F1d2D86b430ddD";
 
 task("balance", "Prints an account's balance")
   .addParam("account", "The account's address")

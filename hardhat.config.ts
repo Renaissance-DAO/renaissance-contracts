@@ -55,6 +55,8 @@ const hardhatConfig: HardhatUserConfig = {
       chainId: +process.env.AURORA_TEST_CHAINID!,
       accounts: [process.env.AURORA_TEST_PRIVATE_KEY!],
       timeout: 600000,
+      gasPrice: 2000000000,
+      gas: 8000000
       //`0x${process.env.AURORA_TEST_PRIVATE_KEY}` ,
       // gasPrice: 2000000000,
       // gas: 8000000,
@@ -73,6 +75,8 @@ const hardhatConfig: HardhatUserConfig = {
       chainId: +process.env.AURORA_MAIN_CHAINID!,
       accounts: [process.env.AURORA_TEST_PRIVATE_KEY!],
       timeout: 600000,
+      gasPrice: 2000000000,
+      gas: 8000000
     },
   },
 };
