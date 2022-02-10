@@ -1,7 +1,7 @@
 // import * as hre from "hardhat";
 import { task } from "hardhat/config";
-import virtuoso1 from "../scripts/json/virtuoso1";
-import maestro1 from "../scripts/json/maestro1";
+import virtuoso1 from "../scripts/json/virtuoso1.json";
+import maestro1 from "../scripts/json/maestro1.json";
 import { chunkArray, timeout } from "../utils/tools";
 
 const A_ART_PRESALE_ADDRESS = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
