@@ -27,13 +27,24 @@ aArt:  0x0165878A594ca255338adfa4d48449f69242Eb8F
 aArtPresale:  0xa513E6E4b8f2a923D98304ec87F64353C4D5C853
 ```
 
-### Deploy to Aurora Testnet
-npx hardhat run --network aurora_testnet dev-scripts/deploy.js
-
-### Deploy to Aurora
-npx hardhat run --network aurora scripts/deploy.js
+### Deployment to testnet (localhost or aurora testnet)
+```
+npx hardhat run --network $NETWORK_HERE scripts/deployPresale.ts && npx hardhat setup
+```
 
 ## Tasks 
+
+### Whitelist users
+Batch a whitelist of users
+```
+npx hardhat whitelist-users --network NETWORK_HERE --dao DAO_ADDRESS_HERE --presale PRESALE_ADDRESS_HERE --show-stack-traces 
+```
+### Setup 
+Setup a local dev env after running `yarn deploy:localhost`
+
+```
+npx hardhat setup
+```
 ### Mint FRAX in Test
 You will be able to mint FRAX on test networks to dev addresses. After you have deployed FRAX contract using the deployment script above and received the contract address, you might need to change `FRAX_ADDRESS` value in `dev-scripts/tasks.js`. 
 

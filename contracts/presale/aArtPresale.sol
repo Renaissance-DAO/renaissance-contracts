@@ -101,6 +101,11 @@ contract aArtPresale is Ownable {
         require(contractPaused == false, "contract is paused");
         _;
     }
+
+    function updateArtAddress(address _address) external onlyOwner {
+        aART = IERC20(_address);
+    } 
+
     /**
      *  @notice adds a single whitelist to the sale
      *  @param _address: address to whitelist
