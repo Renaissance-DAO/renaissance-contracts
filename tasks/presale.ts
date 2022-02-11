@@ -6,39 +6,39 @@ import virtuoso3 from "../scripts/json/virtuoso3.json";
 import maestro1 from "../scripts/json/maestro1.json";
 import { chunkArray, timeout } from "../utils/tools";
 
-const A_ART_PRESALE_ADDRESS = "0xD02Db8093a6193dF17C6e67D0298dEC65f8c2F8e";
-// const DAO_ADDRESS = "0x511fEFE374e9Cb50baF1E3f2E076c94b3eF8B03b";
-
-task("start-sale", "Start presale").setAction(async (_, hre) => {
-  const [account0] = await hre.ethers.getSigners();
-  const A_ART_PRESALE = await hre.ethers.getContractFactory("aArtPresale");
-  const aArtPresale = new hre.ethers.Contract(
-    A_ART_PRESALE_ADDRESS,
-    A_ART_PRESALE.interface,
-    account0
-  );
-
-  await aArtPresale.start();
-  console.log("Started presale");
-});
-
-task("whitelist-user", "whitelist a user for presale")
-  .addParam("account", "The account's address to whitelist")
-  .addParam("list", "'A' or 'B'")
-  .setAction(async (taskArgs, hre) => {
+task("start-sale", "Start presale")
+  .addParam("presale", "presale contract address")
+  .setAction(async ({ presale }, hre) => {
     const [account0] = await hre.ethers.getSigners();
     const A_ART_PRESALE = await hre.ethers.getContractFactory("aArtPresale");
     const aArtPresale = new hre.ethers.Contract(
-      A_ART_PRESALE_ADDRESS,
+      presale,
       A_ART_PRESALE.interface,
-      account0  
+      account0
     );
 
-    if (taskArgs.list) {
-      taskArgs.list.toUpperCase() === "A"
-        ? await aArtPresale.addWhitelistA(taskArgs.account)
-        : taskArgs.list.toUpperCase() === "B" &&
-          (await aArtPresale.addWhitelistB(taskArgs.account));
+    await aArtPresale.start();
+    console.log("Started presale");
+  });
+
+task("whitelist-user", "whitelist a user for presale")
+  .addParam("presale", "presale contract address")
+  .addParam("account", "The account's address to whitelist")
+  .addParam("list", "'A' or 'B'")
+  .setAction(async ({ presale, account, list }, hre) => {
+    const [account0] = await hre.ethers.getSigners();
+    const A_ART_PRESALE = await hre.ethers.getContractFactory("aArtPresale");
+    const aArtPresale = new hre.ethers.Contract(
+      presale,
+      A_ART_PRESALE.interface,
+      account0
+    );
+
+    if (list) {
+      list.toUpperCase() === "A"
+        ? await aArtPresale.addWhitelistA(account)
+        : list.toUpperCase() === "B" &&
+          (await aArtPresale.addWhitelistB(account));
       console.log("whitelisted user");
     }
   });
@@ -126,7 +126,7 @@ task("whitelist-users", "whitelist users from json")
 
     await presaleContract.start();
     await timeout(25000);
-    
+
     await presaleContract.transferOwnership(dao);
     await timeout(25000);
   });
