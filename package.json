@@ -9,9 +9,11 @@
     "@openzeppelin/contracts": "^3.4.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.10",
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
-    "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/test-helpers": "^0.5.12",
     "@typescript-eslint/eslint-plugin": "^4.32.0",
     "@typescript-eslint/parser": "^4.32.0",
@@ -19,7 +21,7 @@
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.4",
-    "hardhat": "^2.5.0",
+    "hardhat": "^2.8.3",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.17",
     "solhint": "^3.3.6",
@@ -32,9 +34,10 @@
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "clean": "npx hardhat clean",
-    "start": "npx hardhat run scripts/deployAll.js",
     "dev": "npx hardhat node",
-    "setup-local": "npx hardhat run --network localhost dev-scripts/deploy.js && npx hardhat mint-frax --account 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --amount 100 --network localhost && npx hardhat whitelist-user --account 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --network localhost && npx hardhat start-sale --network localhost",
+    "start": "npx hardhat run scripts/deploy.ts",
+    "deploy:presale": "npx hardhat run --network aurora_testnet scripts/deployPresale.ts",
+    "deploy:localhost": "npx hardhat run --network localhost scripts/deployPresale.ts && npx hardhat setup",
     "lint:sol": "solhint -f table contracts/**/*.sol"
   },
   "repository": {

@@ -34,7 +34,7 @@ contract aArtPresale is Ownable {
 
     address public PALETTE; // Multisig to send team proceeds to
 
-    uint256 public price = 25 * 1e18; // 20 FRAX per ART
+    uint256 public price = 25 * 1e18; // 25 FRAX per ART
 
     uint256 public capA = 2000 * 1e18; // 1000 FRAX cap per whitelisted user
     uint256 public capB = 1000 * 1e18; // 500 FRAX cap per whitelisted user
@@ -101,6 +101,11 @@ contract aArtPresale is Ownable {
         require(contractPaused == false, "contract is paused");
         _;
     }
+
+    function updateArtAddress(address _address) external onlyOwner {
+        aART = IERC20(_address);
+    } 
+
     /**
      *  @notice adds a single whitelist to the sale
      *  @param _address: address to whitelist
