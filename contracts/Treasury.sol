@@ -233,7 +233,6 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
         }
 
         uint value = valueOf(_token, _amount);
-        require( value <= excessReserves(), "Insufficient reserves" );
 
         totalReserves = totalReserves.sub( value );
         emit ReservesUpdated( totalReserves );
@@ -248,7 +247,6 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
      */
     function mintRewards( address _recipient, uint _amount ) external {
         require( isRewardManager[ msg.sender ], "Not approved" );
-        require( _amount <= excessReserves(), "Insufficient reserves" );
 
         IERC20Mintable( ART ).mint( _recipient, _amount );
 
@@ -256,7 +254,7 @@ contract RenaissanceTreasury is RenaissanceAccessControlled {
     } 
 
     /**
-        @notice returns excess reserves not backing tokens
+        @notice returns excess reserves not backing tokens. ART is not backed, but leaving it here
         @return uint
      */
     function excessReserves() public view returns ( uint ) {
